@@ -1,40 +1,45 @@
-use serde::{Deserialize, Serialize};
-use std::error::Error;
-use wamp_async::{
-    try_into_any_value, Client, ClientConfig, ClientRole, SerializerType, WampKwArgs,
+#![allow(dead_code)]
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+
+use log::info;
+use waapir::waapi::ak;
+use wampire::{
+    client::{Client, Connection},
+    ArgList, Value, URI,
 };
-mod waapi;
-use waapi::Ak;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    let (mut client, (evt_loop, _rpc_evt_queue)) = Client::connect(
-        "ws://localhost:8080/waapi",
-        Some(
-            ClientConfig::default()
-                .set_ssl_verify(false)
-                // Restrict our roles
-                .set_roles(vec![ClientRole::Caller])
-                // Only use Json serialization
-                .set_serializers(vec![SerializerType::Json]),
-        ),
-    )
-    .await?;
-    println!("Connected !!");
+async fn main() {
+    let connection = Connection::new("ws://127.0.0.1:8080/waapi", "realm1");
 
-    tokio::spawn(evt_loop);
+    println!("Connecting");
+    let mut client = connection.connect().unwrap();
 
-    println!("Joining realm");
-    client.join_realm("realm1").await?;
+    println!("Connected");
+
+    let m = r#"
+    {
+        "options":{
+            "return": ["id"]
+        }
+    }
+    "#;
 
     match client
-        .call(Ak::WwiseCoreGetInfo.to_string(), None, None)
+        .call(
+            URI::new(ak::wwise::ui::GET_SELECTED_OBJECTS),
+            None,
+            None,
+        )
         .await
     {
-        Ok((res_args, res_kwargs)) => {
-            println!("Got result: {:#?}", res_kwargs);
+        Ok(result) => {
+            println!("Got result: {:#?}", result.1);
         }
-        Err(e) => println!("Error calling procedure: {:?}", e),
+        Err(err) => {
+            println!("Error making the call: {:?}", err);
+        }
     };
-    Ok(())
+    client.shutdown();
 }
