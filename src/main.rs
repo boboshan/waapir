@@ -3,6 +3,7 @@
 #![allow(unused_variables)]
 
 use log::info;
+use serde_json::json;
 use waapir::waapi::ak;
 use wampire::{
     client::{Client, Connection},
@@ -18,19 +19,22 @@ async fn main() {
 
     println!("Connected");
 
-    let m = r#"
-    {
-        "options":{
-            "return": ["id"]
+    let kwargs = json!({
+        "from": {
+            "id" : ["{6EE88ECF-9723-4DA1-82B4-E3B00FD21314}"]
         }
-    }
-    "#;
+    });
+
+    let options = json!({
+        "return" : ["type", "id"]
+    });
 
     match client
         .call(
-            URI::new(ak::wwise::ui::GET_SELECTED_OBJECTS),
+            URI::new(ak::wwise::core::object::GET),
             None,
-            None,
+            serde_json::from_value(kwargs).ok(),
+            serde_json::from_value(options).ok(),
         )
         .await
     {
