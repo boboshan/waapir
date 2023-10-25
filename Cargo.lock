@@ -2762,8 +2762,7 @@ dependencies = [
 [[package]]
 name = "wampire"
 version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c77d3564b7a6563c79e799b58d4a536e8f30af38ea751f4219d3dab74da012a1"
+source = "git+https://github.com/boboshan/wampire.git#e3ceea72a7cdaa6d69587bef8991ebd0c1178f15"
 dependencies = [
  "argparse",
  "env_logger",

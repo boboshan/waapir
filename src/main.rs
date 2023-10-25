@@ -3,10 +3,11 @@
 #![allow(unused_variables)]
 
 use log::info;
+use serde_json::json;
 use waapir::waapi::ak;
 use wampire::{
     client::{Client, Connection},
-    ArgList, Value, URI,
+    ArgList, Value, URI, List
 };
 
 #[tokio::main]
@@ -18,19 +19,16 @@ async fn main() {
 
     println!("Connected");
 
-    let m = r#"
-    {
-        "options":{
-            "return": ["id"]
-        }
-    }
-    "#;
+    let options = json!({
+        "return":["id"]
+    });
 
     match client
         .call(
             URI::new(ak::wwise::ui::GET_SELECTED_OBJECTS),
             None,
             None,
+            serde_json::from_value(options).unwrap()
         )
         .await
     {
